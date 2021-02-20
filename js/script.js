@@ -233,41 +233,36 @@ window.addEventListener('DOMContentLoaded', () => {
 			let statusMessage = document.createElement('img');
 			statusMessage.src = message.loading;
 			statusMessage.style.cssText = `
-			 display: block;
-			 margin: 0 auto;
-			`;
+						display: block;
+						margin: 0 auto;
+				`;
 			form.insertAdjacentElement('afterend', statusMessage);
 
-			const request = new XMLHttpRequest();
-
-			request.open('POST', 'server.php');
-
-			request.setRequestHeader('Content-type', 'application/json');
-
-			const formData = new FormData(form); // oбъект FormData вместо JSON
-
-			// request.setRequestHeader('Content-type', 'multipart/form-data'); для FormData заголовок отдельно прописывать не нужно! иначе не получим на сервере данные
+			const formData = new FormData(form);
 
 			const object = {};
+
 			formData.forEach(function (value, key) {
 				object[key] = value;
-			}); // перебрали всех данных formData и поместили их в object
-
-			const json = JSON.stringify(object); // конвертация object в JSON
-
-			request.send(json);
-			// request.send(formData); 
-
-			request.addEventListener('load', () => {
-				if (request.status === 200) {
-					console.log(request.response);
-					showThanksModal(message.success);
-					form.reset(); // сброс данных
-					statusMessage.remove();
-				} else {
-					showThanksModal(message.failure);
-				}
 			});
+			// перебрали всех данных formData и поместили их в object
+
+			fetch('server.php', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify(object)
+			}).then(data => {
+				console.log(data);
+				showThanksModal(message.success);
+				statusMessage.remove();
+			}).catch(() => {
+				showThanksModal(message.failure);
+			}).finally(() => {
+				form.reset();
+			});
+			//data - данные, которые возвращает promise
 		});
 	}
 
@@ -279,7 +274,7 @@ window.addEventListener('DOMContentLoaded', () => {
 		openModal();
 
 		const thanksModal = document.createElement('div');
-		thanksModal.classList.add('modal__dialog'); 
+		thanksModal.classList.add('modal__dialog');
 		thanksModal.innerHTML = `
 		  <div class="modal__content">
 			 <div class="modal__close" data-close>×</div>
@@ -287,16 +282,15 @@ window.addEventListener('DOMContentLoaded', () => {
 			</div>
 		`;
 
-		document.querySelector('.modal').append(thanksModal); 
+		document.querySelector('.modal').append(thanksModal);
 		//создаем новый modal__dialog
 
 		setTimeout(() => {
-			thanksModal.remove(); 
+			thanksModal.remove();
 			prevModalDialog.classList.add('show');
 			prevModalDialog.classList.remove('hide');
 			closeModal();
 		}, 4000);
 	}
 	//возвращаем старый modal__dialog
-
 });
