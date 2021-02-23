@@ -182,39 +182,45 @@ window.addEventListener('DOMContentLoaded', () => {
 		}
 	} // динамически вставляем верстку на страницу
 
-	new MenuCard(
-		"img/tabs/vegy.jpg",
-		"vegy",
-		'Меню "Фитнес"',
-		'Меню "Фитнес" - это новый подход к приготовлению блюд: больше свежих овощей и фруктов. Продукт активных и здоровых людей. Это абсолютно новый продукт с оптимальной ценой и высоким качеством!',
-		243,
-		'.menu .container',
-		'menu__item'
-	).render(); // первая карточка
+	const getResource = async (url) => {
+		const res = await fetch(url);
 
-	new MenuCard(
-		"img/tabs/elite.jpg",
-		"elite",
-		'Меню “Премиум”',
-		'В меню “Премиум” мы используем не только красивый дизайн упаковки, но и качественное исполнение блюд. Красная рыба, морепродукты, фрукты - ресторанное меню без похода в ресторан!',
-		378,
-		'.menu .container',
-		'menu__item'
+		if (!res.ok) {
+			throw new Error(`Could not fetch ${url}, status: ${res.status}`);
+		}
+		//.ok - мы что-то получили и это либо ок, либо нет
+		//.status - статус, который вернул нам сервер
+		//new Error() - объект ошибки; throw выкидывает ошибку в консоль
+		//мы искусственно сделали ошибку, чтобы fetch выдал catch при ошибке от сервера
 
-	).render(); // вторая карточка
+		return await res.json();
+		// возвращаем promise; трансформируем ответ от сервера в объект
+	};
 
-	new MenuCard(
-		"img/tabs/post.jpg",
-		"post",
-		'Меню "Постное"',
-		'Меню “Постное” - это тщательный подбор ингредиентов: полное отсутствие продуктов животного происхождения, молоко из миндаля, овса, кокоса или гречки, правильное количество белков за счет тофу и импортных вегетарианских стейков.',
-		567,
-		'.menu .container',
-		'menu__item'
+	// getResource('http://localhost:3000/menu')
+	//   .then(data => {
+	//     data.forEach(({img, altimg, title, descr, price}) => {
+	// 			new MenuCard(img, altimg, title, descr, price, '.menu .container').render();
+	// 		});
+	// 	});
+	// строим карточки с меню, перебирая массив данных и используя деструктизацию объекта
 
-	).render(); //третья карточка
+	axios.get('http://localhost:3000/menu')
+		.then(data => {
+			data.data.forEach(({
+				img,
+				altimg,
+				title,
+				descr,
+				price
+			}) => {
+				new MenuCard(img, altimg, title, descr, price, '.menu .container').render();
+			});
+		});
+	//строим карточки с меню, перебирая массив данных, используя деструктизацию объекта и библиотеку axios
 
-	//Forms
+
+	// Forms
 	const forms = document.querySelectorAll('form');
 	const message = {
 		loading: 'img/form/spinner.svg',
@@ -223,10 +229,25 @@ window.addEventListener('DOMContentLoaded', () => {
 	};
 
 	forms.forEach(item => {
-		postData(item);
+		bindPostData(item);
 	});
 
-	function postData(form) {
+	const postData = async (url, data) => {
+		const res = await fetch(url, {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json'
+			},
+			body: data
+		});
+
+		return await res.json();
+		// возвращаем promise; трансформируем ответ от сервера в JSON
+	};
+	// data - данные, которые постятся
+	//операторы async - внутри функции какой-то асинхронный код; await - ставим перед теми операциями, которые нужно дождаться
+
+	function bindPostData(form) {
 		form.addEventListener('submit', (e) => {
 			e.preventDefault();
 
@@ -240,28 +261,19 @@ window.addEventListener('DOMContentLoaded', () => {
 
 			const formData = new FormData(form);
 
-			const object = {};
+			const json = JSON.stringify(Object.fromEntries(formData.entries()));
+			// formData превращаем в матрицу; затем делаем обычный объект, потом в JSON
 
-			formData.forEach(function (value, key) {
-				object[key] = value;
-			});
-			// перебрали всех данных formData и поместили их в object
-
-			fetch('server.php', {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json'
-				},
-				body: JSON.stringify(object)
-			}).then(data => {
-				console.log(data);
-				showThanksModal(message.success);
-				statusMessage.remove();
-			}).catch(() => {
-				showThanksModal(message.failure);
-			}).finally(() => {
-				form.reset();
-			});
+			postData('http://localhost:3000/requests', json)
+				.then(data => {
+					console.log(data);
+					showThanksModal(message.success);
+					statusMessage.remove();
+				}).catch(() => {
+					showThanksModal(message.failure);
+				}).finally(() => {
+					form.reset();
+				});
 			//data - данные, которые возвращает promise
 		});
 	}
@@ -293,4 +305,66 @@ window.addEventListener('DOMContentLoaded', () => {
 		}, 4000);
 	}
 	//возвращаем старый modal__dialog
+
+	fetch('http://localhost:3000/menu')
+		.then(data => data.json())
+		.then(res => console.log(res));
+
+
+	// Slider
+	let slideIndex = 1; //счетчик слайдов
+	const slides = document.querySelectorAll('.offer__slide'),
+		prev = document.querySelector('.offer__slider-prev'),
+		next = document.querySelector('.offer__slider-next'),
+		total = document.querySelector('#total'), //количество всех слайдов
+		current = document.querySelector('#current'); //номер текущего слайда
+
+	showSlides(slideIndex);
+
+	if (slides.length < 10) {
+		total.textContent = `0${slides.length}`;
+	} else {
+		total.textContent = slides.length;
+	}
+	//определяем общее количество слайдов
+
+	function showSlides(n) {
+		if (n > slides.length) {
+			slideIndex = 1;
+		}
+		if (n < 1) {
+			slideIndex = slides.length;
+		}
+		//если больше, чем наше количество слайдов, то перемещаемся в самое начало; если меньше - в конец
+
+		slides.forEach((item) => item.style.display = 'none');
+
+		slides[slideIndex - 1].style.display = 'block';
+		//скрываем все слайды; показываем текущий [slideIndex - 1]
+
+		if (slides.length < 10) {
+			current.textContent = `0${slideIndex}`;
+		} else {
+			current.textContent = slideIndex;
+		}
+		//изменяем номер текущего слайда
+	}
+	//n - текущий slideIndex
+
+
+	function plusSlides(n) {
+		showSlides(slideIndex += n);
+	}
+	// вызываем функцию с slideIndex увеличеным на значение n
+
+	prev.addEventListener('click', function () {
+		plusSlides(-1);
+	});
+	//предыдущий слайд
+
+	next.addEventListener('click', function () {
+		plusSlides(1);
+	});
+	//следующий слайд
+
 });
