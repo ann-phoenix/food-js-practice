@@ -186,7 +186,11 @@ window.addEventListener('DOMContentLoaded', () => {
 		const res = await fetch(url);
 
 		if (!res.ok) {
+<<<<<<< HEAD
 			throw new Error(`Could not fetch ${url}, status: ${res.status}`);
+=======
+		 throw new Error(`Could not fetch ${url}, status: ${res.status}`);
+>>>>>>> 1c68dd386d809453fc8ec718863ba837ccd7787b
 		}
 		//.ok - мы что-то получили и это либо ок, либо нет
 		//.status - статус, который вернул нам сервер
@@ -197,6 +201,7 @@ window.addEventListener('DOMContentLoaded', () => {
 		// возвращаем promise; трансформируем ответ от сервера в объект
 	};
 
+<<<<<<< HEAD
 	// getResource('http://localhost:3000/menu')
 	//   .then(data => {
 	//     data.forEach(({img, altimg, title, descr, price}) => {
@@ -221,6 +226,17 @@ window.addEventListener('DOMContentLoaded', () => {
 
 
 	// Forms
+=======
+	getResource('http://localhost:3000/menu')
+	  .then(data => {
+      data.forEach(({img, altimg, title, descr, price}) => {
+				new MenuCard(img, altimg, title, descr, price, '.menu .container').render();
+			});
+		});
+	// строим карточки с меню, перебирая массив данных и используя деструктизацию объекта
+
+	//Forms
+>>>>>>> 1c68dd386d809453fc8ec718863ba837ccd7787b
 	const forms = document.querySelectorAll('form');
 	const message = {
 		loading: 'img/form/spinner.svg',
@@ -309,6 +325,7 @@ window.addEventListener('DOMContentLoaded', () => {
 	fetch('http://localhost:3000/menu')
 		.then(data => data.json())
 		.then(res => console.log(res));
+<<<<<<< HEAD
 
 
 	// Slider
@@ -367,4 +384,6 @@ window.addEventListener('DOMContentLoaded', () => {
 	});
 	//следующий слайд
 
+=======
+>>>>>>> 1c68dd386d809453fc8ec718863ba837ccd7787b
 });
