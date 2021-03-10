@@ -440,20 +440,28 @@ window.addEventListener('DOMContentLoaded', () => {
 		if (i == 0) {
 			dot.style.opacity = 1;
 		} // добавляем активность точке
-		indicators.append(dot);// добавили в обертку для точек
+		indicators.append(dot); // добавили в обертку для точек
 		dots.push(dot); // помещаем точки в массив
 	}
 	//создаем нужное количество точек
 
+	function deleteNotDigits(str) {
+		return +str.replace(/\D/g, '');
+	};
+
+	function iterationDots() {
+		dots.forEach(dot => dot.style.opacity = '.5');
+		dots[slideIndex - 1].style.opacity = 1;
+	};
+
+
 	next.addEventListener('click', () => {
-		if (offset == (+width.slice(0, width.length - 2) * (slides.length - 1))) {
+		if (offset == deleteNotDigits(width) * (slides.length - 1)) {
 			offset = 0;
 		} else {
-			offset += +width.slice(0, width.length - 2);
+			offset += deleteNotDigits(width);
 		}
-		// если отступ равен ширине одного слайда умноженного на количество слайдов - 1 => мы возвращаемся в самое начало
-		//+width.slice(0, width.length - 2) - изменили строку '650px' в число 600
-		// += +width.slice к offset добавили ширину еще одного слайда и сделали смещение равное этой ширине 
+
 
 		slidesField.style.transform = `translateX(-${offset}px)`;
 
@@ -470,15 +478,16 @@ window.addEventListener('DOMContentLoaded', () => {
 			current.textContent = slideIndex;
 		}
 
-		dots.forEach(dot => dot.style.opacity = '.5');
-		dots[slideIndex - 1].style.opacity = 1;
+		iterationDots();
+		// dots.forEach(dot => dot.style.opacity = '.5');
+		// dots[slideIndex - 1].style.opacity = 1;
 	});
 
 	prev.addEventListener('click', () => {
 		if (offset == 0) {
-			offset = +width.slice(0, width.length - 2) * (slides.length - 1);
+			offset = deleteNotDigits(width) * (slides.length - 1);
 		} else {
-			offset -= +width.slice(0, width.length - 2);
+			offset -= deleteNotDigits(width);
 		}
 
 		slidesField.style.transform = `translateX(-${offset}px)`;
@@ -496,28 +505,32 @@ window.addEventListener('DOMContentLoaded', () => {
 			current.textContent = slideIndex;
 		}
 
-		dots.forEach(dot => dot.style.opacity = '.5');
-		dots[slideIndex - 1].style.opacity = 1;
+		iterationDots();
+
+		// dots.forEach(dot => dot.style.opacity = '.5');
+		// dots[slideIndex - 1].style.opacity = 1;
 	});
 
 	dots.forEach(dot => {
 		dot.addEventListener('click', (e) => {
-      const slideTo = e.target.getAttribute('data-slide-to'); // объект события
+			const slideTo = e.target.getAttribute('data-slide-to'); // объект события
 
 			slideIndex = slideTo; // подключаем точки к слайдам
-			offset = +width.slice(0, width.length - 2) * (slideTo - 1); // подключаем точки к сетчику
+			offset = deleteNotDigits(width) * (slideTo - 1); // подключаем точки к сетчику
 
 			slidesField.style.transform = `translateX(-${offset}px)`;
 
 			if (slides.length < 10) {
 				current.textContent = `0${slideIndex}`;
-			} else{
+			} else {
 				current.textContent = slideIndex;
 			}
-			
-			dots.forEach(dot => dot.style.opacity = '.5');
-			dots[slideIndex - 1].style.opacity = 1;
+
+			iterationDots();
+
+			// dots.forEach(dot => dot.style.opacity = '.5');
+			// dots[slideIndex - 1].style.opacity = 1;
 		});
 	});
-	// /-= +width.slice отнимаем ширину слайда, на которую смещаемся
 });
+
