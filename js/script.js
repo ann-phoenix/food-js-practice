@@ -568,7 +568,7 @@ window.addEventListener('DOMContentLoaded', () => {
 		});
 	}
 
-	getStaticInformation('#gender', 'calculating__choose-item_active');
+	getStaticInformation('gender', 'calculating__choose-item_active');
 	getStaticInformation('.calculating__choose_big', 'calculating__choose-item_active');
 
 	function getDynamicInformation(selector) {
@@ -590,7 +590,7 @@ window.addEventListener('DOMContentLoaded', () => {
 		});
 	}
 	// обрабатываем каждый input
-	// switch case проверяем соответствие строки
+	// с помощью switch case проверяем соответствие строки
 
 	getDynamicInformation('#height');
 	getDynamicInformation('#weight');
