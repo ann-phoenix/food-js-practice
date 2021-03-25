@@ -1,6 +1,5 @@
-function timer() {
+function timer(id, deadline) {
 	//Timer
-	const deadline = '2021-04-18'; //дата конца работы таймера
 
 	function getTimeRemaining(endtime) { // задача получить разницу между датами
 		const t = Date.parse(endtime) - Date.parse(new Date()); //  Date.parse(endtime) количество миллисекунд, которое будет в конечном времени, Date.parse(new Date) текущая дата -> общее количество миллисекунд
@@ -51,7 +50,7 @@ function timer() {
 
 	}
 
-	setClock('.timer', deadline);
+	setClock(id, deadline);
 }
 
-module.exports = timer;
+export default timer;
